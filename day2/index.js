@@ -3,6 +3,8 @@ const test = require('../utils/test')
 const getResult = require('../utils/getResult')
 
 class Day2 {
+  memory = []
+
   part1(input, test = false) {
     const intcode = input[0].split(',').map(n => Number(n))
 
@@ -28,6 +30,23 @@ class Day2 {
     return intcode[0]
   }
 
+  runOptCodeInMemory(optCode, pos1, pos2, output) {
+    for (let i = 0; i < this.memory.length; i += 4) {
+      // stop if we receive a halt code or an invalid code
+      if (optCode === 99 || [1, 2, 99].indexOf(optCode) === -1) {
+        break
+      }
+
+      if (optCode === 1) {
+        this.memory[output] = this.memory[pos1] + this.memory[pos2]
+      } else if (optCode === 2) {
+        this.memory[output] = this.memory[pos1] * this.memory[pos2]
+      }
+    }
+
+    return this.memory
+  }
+
   part2(input, expected, test = false) {
     const intcode = input[0].split(',').map(n => Number(n))
 
@@ -37,23 +56,21 @@ class Day2 {
       intcode[2] = 2
     }
 
-    for (let i = 0; i < intcode.length; i += 4) {
-      const [optCode, pos1, pos2, output] = intcode.slice(i, i + 4)
+    this.memory = intcode.slice()
+    for (let i = 0; i < this.memory.length; i += 4) {
+      const [optCode, pos1, pos2, output] = this.memory.slice(i, i + 4)
 
       // stop if we receive a halt code or an invalid code
-      if (optCode === 99 || [1, 2, 99].indexOf(optCode) === -1) break;
-
-      let result = 0;
-      if (optCode === 1) {
-        result = intcode[pos1] + intcode[pos2]
-      } else if (optCode === 2) {
-        result = intcode[pos1] * intcode[pos2]
+      if (optCode === 99 || [1, 2, 99].indexOf(optCode) === -1) {
+        break
       }
 
-      // console.log(result, expected)
-      if (result === expected) {
+      const result = this.runOptCodeInMemory(optCode, pos1, pos2, output)
+      if (result[0] === expected) {
         return 100 * pos1 + pos2
       }
+
+      this.memory = intcode.slice()
     }
   }
 }
