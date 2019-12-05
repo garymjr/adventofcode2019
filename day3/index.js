@@ -18,33 +18,27 @@ class Day3 {
     getPoints(wire) {
         let x = 0
         let y = 0
-        let points = wire.reduce((arr, cmd) => {
+        let points = wire.reduce((set, cmd) => {
             const dir = cmd[0]
             const move = Number(cmd.slice(1))
             for (let i = 0; i < move; i++) {
                 x += this.x[dir]
                 y += this.y[dir]
-
-                const dups = arr.filter(([ax, ay]) => {
-                    return ax === x && ay === y
-                })
-
-                dups.length === 0 && arr.push([x, y])
+                set.add(`${x},${y}`)
             }
-            return arr
-        }, [])
+            return set
+        }, new Set())
         return points
     }
 
     findMatches(wire1, wire2) {
         const matches = []
-        wire1.forEach(wire => {
-            const [match] = wire2.filter(([x, y]) => {
-                return wire[0] === x && wire[1] === y
-            })
-            match && matches.push(Math.abs(match[0]) + Math.abs(match[1]))
+        Array.from(wire1).forEach(point => {
+            wire2.has(point) && matches.push(point.split(',').map(Number))
         })
-        return matches
+        return matches.map(([x, y]) => {
+            return Math.abs(x) + Math.abs(y)
+        })
     }
 }
 
